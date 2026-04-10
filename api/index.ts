@@ -103,7 +103,7 @@ const loadSystemSettings = async (client: any) => {
         'SYSTEM_NOTIFICATION', 'SHOW_SYSTEM_NOTIFICATION',
         'SYSTEM_BUDGET', 'TOTAL_LOAN_PROFIT', 'TOTAL_RANK_PROFIT', 'MONTHLY_STATS',
         'ENABLE_PAYOS', 'ENABLE_VIETQR', 'LUCKY_SPIN_VOUCHERS', 'LUCKY_SPIN_WIN_RATE',
-        'RANK_CONFIG'
+        'RANK_CONFIG', 'lastKeepAlive'
       ];
       if (systemKeys.includes(item.key)) {
         if (['MONTHLY_STATS', 'PAYMENT_ACCOUNT', 'LUCKY_SPIN_VOUCHERS', 'RANK_CONFIG'].includes(item.key)) {
@@ -449,6 +449,10 @@ export const keepAliveSupabase = async () => {
     // Save the last success timestamp in the config table
     await client.from('config').upsert({ key: 'lastKeepAlive', value: new Date().toISOString() }, { onConflict: 'key' });
     
+    // Invalidate cache to ensure next data fetch gets the new timestamp
+    settingsCache = null;
+    lastCacheUpdate = 0;
+    
     console.log("[Keep-Alive] Supabase ping successful.");
     return true;
   } catch (e: any) {
@@ -468,6 +472,9 @@ router.get("/supabase-status", async (req, res) => {
       });
     }
     
+    // Trigger keepAlive logic to update timestamp and clear cache
+    const keepAliveSuccess = await keepAliveSupabase();
+    
     // Use a more standard count query
     const { error } = await client.from('users').select('*', { count: 'exact', head: true });
     
@@ -479,7 +486,11 @@ router.get("/supabase-status", async (req, res) => {
       });
     }
     
-    res.json({ connected: true, message: "Kết nối Supabase ổn định" });
+    res.json({ 
+      connected: true, 
+      message: "Kết nối Supabase ổn định",
+      keepAlive: keepAliveSuccess ? "Updated" : "Failed"
+    });
   } catch (e: any) {
     console.error("Critical error in /supabase-status:", e);
     res.json({ connected: false, error: `Lỗi hệ thống: ${e.message}` });
