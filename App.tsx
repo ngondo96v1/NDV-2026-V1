@@ -25,8 +25,7 @@ const AdminSystem = lazy(() => import('./components/AdminSystem'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 const SystemNotificationDrawer = lazy(() => import('./components/SystemNotificationDrawer'));
 const LuckySpin = lazy(() => import('./components/LuckySpin'));
-const BankUpdateWarning = lazy(() => import('./components/BankUpdateWarning'));
-const AvatarUpdateWarning = lazy(() => import('./components/AvatarUpdateWarning'));
+const ProfileUpdateWarning = lazy(() => import('./components/ProfileUpdateWarning'));
 const DatabaseErrorModal = lazy(() => import('./components/DatabaseErrorModal'));
 
 const LoadingFallback = () => (
@@ -312,8 +311,7 @@ const App: React.FC = () => {
     return saved === null ? true : saved === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
-  const [showBankWarning, setShowBankWarning] = useState(false);
-  const [showAvatarWarning, setShowAvatarWarning] = useState(false);
+  const [showProfileWarning, setShowProfileWarning] = useState(false);
   const [lastSeenNotificationCount, setLastSeenNotificationCount] = useState<number>(() => {
     const saved = localStorage.getItem('ndv_last_seen_notif_count');
     return saved ? Number(saved) : 0;
@@ -454,20 +452,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (user && !user.isAdmin) {
-      if (!hasBankInfo(user)) {
-        setShowBankWarning(true);
-      } else {
-        setShowBankWarning(false);
-      }
-      
-      if (!user.avatar) {
-        setShowAvatarWarning(true);
-      } else {
-        setShowAvatarWarning(false);
-      }
+      const needsBank = !hasBankInfo(user);
+      const needsAvatar = !user.avatar;
+      setShowProfileWarning(needsBank || needsAvatar);
     } else {
-      setShowBankWarning(false);
-      setShowAvatarWarning(false);
+      setShowProfileWarning(false);
     }
   }, [user?.bankName, user?.bankAccountNumber, user?.bankAccountHolder, user?.avatar, user?.isAdmin]);
 
@@ -2356,7 +2345,7 @@ const App: React.FC = () => {
       setUser(updatedUser);
       setRegisteredUsers(newUsers);
       addNotification(user.id, 'Cập nhật tài khoản', 'Thông tin tài khoản nhận tiền của bạn đã được cập nhật.', 'SYSTEM');
-      setShowBankWarning(false);
+      setShowProfileWarning(false);
       
       // Persist to server - Targeted sync
       authenticatedFetch('/api/users', {
@@ -2431,7 +2420,7 @@ const App: React.FC = () => {
             systemBudget={systemBudget} 
             onApply={() => {
               if (!hasBankInfo(user)) {
-                setShowBankWarning(true);
+                setShowProfileWarning(true);
                 return;
               }
               setCurrentView(AppView.APPLY_LOAN);
@@ -2439,7 +2428,7 @@ const App: React.FC = () => {
             onLogout={handleLogout} 
             onViewAllLoans={() => {
               if (!hasBankInfo(user)) {
-                setShowBankWarning(true);
+                setShowProfileWarning(true);
                 return;
               }
               setCurrentView(AppView.APPLY_LOAN);
@@ -2570,7 +2559,7 @@ const App: React.FC = () => {
             systemBudget={systemBudget} 
             onApply={() => {
               if (!hasBankInfo(user)) {
-                setShowBankWarning(true);
+                setShowProfileWarning(true);
                 return;
               }
               setCurrentView(AppView.APPLY_LOAN);
@@ -2578,7 +2567,7 @@ const App: React.FC = () => {
             onLogout={handleLogout} 
             onViewAllLoans={() => {
               if (!hasBankInfo(user)) {
-                setShowBankWarning(true);
+                setShowProfileWarning(true);
                 return;
               }
               setCurrentView(AppView.APPLY_LOAN);
@@ -2708,17 +2697,21 @@ const App: React.FC = () => {
             onClose={() => setDbError(null)} 
           />
         )}
-        {showBankWarning && currentView !== AppView.PROFILE && (
-          <BankUpdateWarning onUpdate={() => {
-            setShowBankWarning(false);
-            setCurrentView(AppView.PROFILE);
-          }} />
-        )}
-        {showAvatarWarning && currentView !== AppView.PROFILE && (
-          <AvatarUpdateWarning onUpdate={() => {
-            setShowAvatarWarning(false);
-            setCurrentView(AppView.PROFILE);
-          }} />
+        {showProfileWarning && user && currentView !== AppView.PROFILE && (
+          <ProfileUpdateWarning 
+            missingBank={!hasBankInfo(user)}
+            missingAvatar={!user.avatar}
+            onUpdateBank={() => {
+              setShowProfileWarning(false);
+              setCurrentView(AppView.PROFILE);
+              // Optionally open the bank modal directly if Profile view supports it
+              // But standard flow seems to be just going to Profile
+            }}
+            onUpdateAvatar={() => {
+              setShowProfileWarning(false);
+              setCurrentView(AppView.PROFILE);
+            }}
+          />
         )}
         {showNavbar && (
           <div className="bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 px-4 py-4 flex justify-between items-center z-[50] safe-area-bottom flex-none">
@@ -2762,7 +2755,7 @@ const App: React.FC = () => {
                 <button 
                   onClick={() => {
                     if (!hasBankInfo(user)) {
-                      setShowBankWarning(true);
+                      setShowProfileWarning(true);
                       return;
                     }
                     setSettleLoanFromDash(null);
@@ -2777,7 +2770,7 @@ const App: React.FC = () => {
                 <button 
                   onClick={() => {
                     if (!hasBankInfo(user)) {
-                      setShowBankWarning(true);
+                      setShowProfileWarning(true);
                       return;
                     }
                     setSettleLoanFromDash(null);
