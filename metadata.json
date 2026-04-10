@@ -1,0 +1,7 @@
+{
+  "name": "NDV FN26 NEW",
+  "description": "NDV123",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

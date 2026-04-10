@@ -1,0 +1,11 @@
+{
+  "supabaseUrl": "",
+  "supabaseKey": "",
+  "imgbbApiKey": "",
+  "bankName": "BVBANK TIMO",
+  "bankAccount": "0877203996",
+  "bankHolder": "NGUYEN DUY VIET",
+  "bankId": "970454",
+  "partialFee": 0.15,
+  "maxExtensions": 2
+}
