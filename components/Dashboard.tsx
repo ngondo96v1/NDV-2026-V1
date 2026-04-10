@@ -21,7 +21,7 @@ interface DashboardProps {
   onOpenLuckySpin?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ 
+const Dashboard: React.FC<DashboardProps> = React.memo(({ 
   user, 
   loans, 
   notifications,
@@ -412,6 +412,6 @@ const Dashboard: React.FC<DashboardProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default Dashboard;

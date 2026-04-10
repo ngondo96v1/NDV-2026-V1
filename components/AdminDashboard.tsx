@@ -51,7 +51,7 @@ interface AdminDashboardProps {
   settings: AppSettings;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
+const AdminDashboard: React.FC<AdminDashboardProps> = React.memo(({ 
   user, 
   loans, 
   registeredUsersCount, 
@@ -632,6 +632,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default AdminDashboard;

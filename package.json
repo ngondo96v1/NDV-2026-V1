@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@tailwindcss/vite": "^4.2.0",
     "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "d3": "^7.9.0",
     "dotenv": "^17.3.1",

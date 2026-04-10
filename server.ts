@@ -8,6 +8,7 @@ import * as dotenv from "dotenv";
 import { Server } from "socket.io";
 import http from "http";
 import { rateLimit } from "express-rate-limit";
+import compression from "compression";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,6 +18,9 @@ import { apiRouter, keepAliveSupabase } from "./api/index.ts";
 async function startServer() {
   const app = express();
   const server = http.createServer(app);
+  
+  // Enable compression for all responses
+  app.use(compression());
   
   // Trust proxy is required for express-rate-limit to work correctly behind a reverse proxy (like nginx/Cloud Run)
   app.set('trust proxy', 1);

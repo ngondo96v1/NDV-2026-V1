@@ -69,10 +69,22 @@ const isValidUrl = (url: string) => {
 const isPlaceholder = (val: string) => 
   !val || val.includes("your-project-id") || val.includes("your-service-role-key") || val === "https://your-project-id.supabase.co";
 
+// In-memory cache for settings to reduce DB load
+let settingsCache: any = null;
+let lastCacheUpdate = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Helper to load system settings from Supabase
 const loadSystemSettings = async (client: any) => {
   try {
     if (!client) return {};
+    
+    // Check cache first
+    const now = Date.now();
+    if (settingsCache && (now - lastCacheUpdate < CACHE_TTL)) {
+      return settingsCache;
+    }
+
     const { data, error } = await client.from('config').select('key, value');
     if (error) throw error;
     
@@ -109,10 +121,13 @@ const loadSystemSettings = async (client: any) => {
         }
       }
     });
+
+    settingsCache = settings;
+    lastCacheUpdate = now;
     return settings;
   } catch (e) {
     console.error("[CONFIG] Failed to load settings from Supabase:", e);
-    return {};
+    return settingsCache || {}; // Return stale cache if DB fails
   }
 };
 
@@ -577,6 +592,10 @@ router.post("/settings", async (req: any, res) => {
   
   const savedToDb = await saveSystemSettings(client, systemSettings);
   
+  // Invalidate cache after save
+  settingsCache = null;
+  lastCacheUpdate = 0;
+  
   // Fetch full merged settings after save to return to client
   const fullSettings = await getMergedSettings(client);
   
@@ -863,9 +882,9 @@ router.get("/data", async (req, res) => {
 
     const fetchConfig = async () => {
       try {
-        const { data, error } = await client.from('config').select('key, value');
-        if (error) throw error;
-        return data || [];
+        // Use loadSystemSettings which has caching
+        const settings = await loadSystemSettings(client);
+        return Object.entries(settings).map(([key, value]) => ({ key, value }));
       } catch (e: any) {
         console.error("Lỗi fetch config:", e.message || e);
         return [];
@@ -873,11 +892,12 @@ router.get("/data", async (req, res) => {
     };
 
     const fetchBudgetLogs = async () => {
+      if (!isAdmin) return []; // Only admin needs budget logs
       try {
         const { data, error } = await client.from('budget_logs')
           .select('*')
           .order('createdAt', { ascending: false })
-          .limit(100);
+          .limit(50); // Reduced limit for speed
         if (error) throw error;
         return data || [];
       } catch (e: any) {

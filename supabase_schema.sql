@@ -180,4 +180,14 @@ BEGIN
     EXCEPTION WHEN duplicate_object THEN
         -- Do nothing if constraint already exists
     END;
+
+    -- 5. Performance Indexes
+    CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+    CREATE INDEX IF NOT EXISTS idx_users_is_admin ON users("isAdmin");
+    CREATE INDEX IF NOT EXISTS idx_loans_user_id ON loans("userId");
+    CREATE INDEX IF NOT EXISTS idx_loans_status ON loans(status);
+    CREATE INDEX IF NOT EXISTS idx_loans_created_at ON loans("createdAt");
+    CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications("userId");
+    CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+    CREATE INDEX IF NOT EXISTS idx_budget_logs_created_at ON budget_logs("createdAt");
 END $$;

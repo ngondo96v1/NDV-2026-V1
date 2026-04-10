@@ -1,31 +1,40 @@
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, Suspense, lazy } from 'react';
 import { AppView, User, UserRank, LoanRecord, Notification, MonthlyStat, AppSettings, Voucher, BudgetLog } from './types';
-import Login from './components/Login';
-import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import LoanApplication from './components/LoanApplication';
-import RankLimits from './components/RankLimits';
-import Profile from './components/Profile';
-import SecurityModal from './components/SecurityModal';
-import TermsModal from './components/TermsModal';
-import BankInfoModal from './components/BankInfoModal';
-import EditProfileModal from './components/EditProfileModal';
-import AdminDashboard from './components/AdminDashboard';
-import AdminUserManagement from './components/AdminUserManagement';
-import AdminBudget from './components/AdminBudget';
-import AdminSystem from './components/AdminSystem';
-import NotificationModal from './components/NotificationModal';
-import SystemNotificationDrawer from './components/SystemNotificationDrawer';
-import LuckySpin from './components/LuckySpin';
 import { motion, AnimatePresence } from 'motion/react';
-import { User as UserIcon, Home, Briefcase, Medal, LayoutGrid, Users, Wallet, AlertTriangle, X, Database, Settings, RefreshCcw } from 'lucide-react';
+import { User as UserIcon, Home, Briefcase, Medal, LayoutGrid, Users, Wallet, AlertTriangle, X, Database, Settings, RefreshCcw, Loader2 } from 'lucide-react';
 import { compressImage, generateContractId, generateUserId, uploadToImgBB } from './utils';
-import BankUpdateWarning from './components/BankUpdateWarning';
-import AvatarUpdateWarning from './components/AvatarUpdateWarning';
-import DatabaseErrorModal from './components/DatabaseErrorModal';
 import { io, Socket } from 'socket.io-client';
 import { Toaster, toast } from 'sonner';
+
+// Lazy load components to improve initial load speed
+const Login = lazy(() => import('./components/Login'));
+const Register = lazy(() => import('./components/Register'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const LoanApplication = lazy(() => import('./components/LoanApplication'));
+const RankLimits = lazy(() => import('./components/RankLimits'));
+const Profile = lazy(() => import('./components/Profile'));
+const SecurityModal = lazy(() => import('./components/SecurityModal'));
+const TermsModal = lazy(() => import('./components/TermsModal'));
+const BankInfoModal = lazy(() => import('./components/BankInfoModal'));
+const EditProfileModal = lazy(() => import('./components/EditProfileModal'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const AdminUserManagement = lazy(() => import('./components/AdminUserManagement'));
+const AdminBudget = lazy(() => import('./components/AdminBudget'));
+const AdminSystem = lazy(() => import('./components/AdminSystem'));
+const NotificationModal = lazy(() => import('./components/NotificationModal'));
+const SystemNotificationDrawer = lazy(() => import('./components/SystemNotificationDrawer'));
+const LuckySpin = lazy(() => import('./components/LuckySpin'));
+const BankUpdateWarning = lazy(() => import('./components/BankUpdateWarning'));
+const AvatarUpdateWarning = lazy(() => import('./components/AvatarUpdateWarning'));
+const DatabaseErrorModal = lazy(() => import('./components/DatabaseErrorModal'));
+
+const LoadingFallback = () => (
+  <div className="h-[100dvh] bg-black flex flex-col items-center justify-center p-8 text-center">
+    <Loader2 size={32} className="text-[#ff8c00] animate-spin mb-4" />
+    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em]">Đang tải hệ thống...</p>
+  </div>
+);
 
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
@@ -2640,8 +2649,9 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <Toaster position="top-center" richColors />
-      <div className="h-[100dvh] bg-black text-white flex flex-col max-w-md mx-auto relative overflow-hidden">
+      <Suspense fallback={<LoadingFallback />}>
+        <Toaster position="top-center" richColors />
+        <div className="h-[100dvh] bg-black text-white flex flex-col max-w-md mx-auto relative overflow-hidden">
         {storageFull && !user?.isAdmin && (
           <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-8 text-center space-y-6">
             <div className="w-20 h-20 bg-orange-500/10 rounded-full flex items-center justify-center text-[#ff8c00] animate-pulse">
@@ -2844,8 +2854,9 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-    </ErrorBoundary>
-  );
+    </Suspense>
+  </ErrorBoundary>
+);
 };
 
 export default App;
