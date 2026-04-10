@@ -484,9 +484,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = React.memo(({
                   <div key={log.id} className="bg-black/20 border border-white/5 rounded-xl p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        log.type === 'ADD' || log.type === 'LOAN_REPAY' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                        log.type === 'ADD' || log.type === 'LOAN_REPAY' || log.type === 'INITIAL' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
                       }`}>
-                        {log.type === 'ADD' || log.type === 'LOAN_REPAY' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                        {log.type === 'ADD' || log.type === 'LOAN_REPAY' || log.type === 'INITIAL' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                       </div>
                       <div>
                         <p className="text-[8px] font-black text-white uppercase leading-tight">{log.note || 'Giao dịch hệ thống'}</p>
@@ -496,9 +496,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = React.memo(({
                       </div>
                     </div>
                     <p className={`text-[10px] font-black ${
-                      log.type === 'ADD' || log.type === 'LOAN_REPAY' ? 'text-green-500' : 'text-red-500'
+                      log.type === 'ADD' || log.type === 'LOAN_REPAY' || log.type === 'INITIAL' ? 'text-green-500' : 'text-red-500'
                     }`}>
-                      {log.type === 'ADD' || log.type === 'LOAN_REPAY' ? '+' : '-'}{log.amount.toLocaleString()}
+                      {log.type === 'ADD' || log.type === 'LOAN_REPAY' || log.type === 'INITIAL' ? '+' : '-'}{log.amount.toLocaleString()}
                     </p>
                   </div>
                 ))}
